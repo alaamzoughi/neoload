@@ -1,0 +1,5 @@
+GET http://localhost:8080/api/token/refresh
+Accept: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzd2lsYWgiLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4iLCJleHAiOjE2Mjc0NzE1OTl9.4rROQC6rO7-QNyXpVhpsrjkQp8oRujhSfxScssvXkwc
+
+
