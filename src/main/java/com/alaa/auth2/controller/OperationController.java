@@ -5,22 +5,19 @@ import com.alaa.auth2.dto.ResponseDto;
 import com.alaa.auth2.service.OperationService;
 import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
-import org.apache.poi.hssf.util.HSSFColor;
-import org.apache.poi.ss.usermodel.IndexedColors;
+
 import org.apache.poi.util.Units;
 import org.apache.poi.xwpf.model.XWPFHeaderFooterPolicy;
 import org.apache.poi.xwpf.usermodel.*;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.math.BigInteger;
-import java.util.List;
+
 
 @Api
 @RequestMapping("/api")
@@ -34,8 +31,6 @@ public class OperationController implements OperationApi {
         try {
             XWPFDocument document = new XWPFDocument();
             FileOutputStream out = new FileOutputStream(new File("/home/alaa/Bureau/lib/test1.docx"));
-
-
 
             XWPFParagraph title = document.createParagraph();
 
@@ -126,22 +121,36 @@ public class OperationController implements OperationApi {
             //insert a valid logo in the first column
             XWPFTableRow tableRowTwo = table.createRow();
             XWPFParagraph paragraph_images = tableRowTwo.getCell(0).addParagraph();
+            XWPFRun run_text = paragraph_images.createRun();
             XWPFRun run_images = paragraph_images.createRun();
+            paragraph_images.setAlignment(ParagraphAlignment.BOTH);
+            run_text.addTab();
             FileInputStream fis = new FileInputStream("/home/alaa/Images/valid.png");
-            XWPFPicture picture = run_images.addPicture(fis, XWPFDocument.PICTURE_TYPE_PNG, "/home/alaa/Images/valid.png", Units.pixelToEMU(150), Units.pixelToEMU(100));
+            XWPFPicture picture = run_images.addPicture(fis, XWPFDocument.PICTURE_TYPE_PNG, "/home/alaa/Images/valid.png", Units.pixelToEMU(75), Units.pixelToEMU(75));
 
             //insert a valid logo in the second column
             XWPFParagraph paragraph_images2 = tableRowTwo.getCell(1).addParagraph();
+            XWPFRun run_text2 = paragraph_images2.createRun();
             XWPFRun run_images2 = paragraph_images2.createRun();
+            paragraph_images2.setAlignment(ParagraphAlignment.BOTH);
+            run_text2.addTab();
             FileInputStream fis2 = new FileInputStream("/home/alaa/Images/valid.png");
-            XWPFPicture picture2 = run_images2.addPicture(fis2, XWPFDocument.PICTURE_TYPE_PNG, "/home/alaa/Images/valid.png", Units.pixelToEMU(150), Units.pixelToEMU(100));
+            XWPFPicture picture2 = run_images2.addPicture(fis2, XWPFDocument.PICTURE_TYPE_PNG, "/home/alaa/Images/valid.png", Units.pixelToEMU(75), Units.pixelToEMU(75));
 
             //insert a valid logo in the thrid column
 
             XWPFParagraph paragraph_images3 = tableRowTwo.getCell(2).addParagraph();
+            XWPFRun run_text3 = paragraph_images3.createRun();
             XWPFRun run_images3 = paragraph_images3.createRun();
+
+            paragraph_images3.setAlignment(ParagraphAlignment.BOTH);
+            run_text3.addTab();
+
+
             FileInputStream fis3 = new FileInputStream("/home/alaa/Images/valid.png");
-            XWPFPicture picture3 = run_images3.addPicture(fis3, XWPFDocument.PICTURE_TYPE_PNG, "/home/alaa/Images/valid.png", Units.pixelToEMU(150), Units.pixelToEMU(100));
+            XWPFPicture picture3 = run_images3.addPicture(fis3, XWPFDocument.PICTURE_TYPE_PNG, "/home/alaa/Images/valid.png", Units.pixelToEMU(75), Units.pixelToEMU(75));
+
+
 
 
 
@@ -152,43 +161,27 @@ public class OperationController implements OperationApi {
 
 
 
-            //Color the first row of the table
-                List<XWPFTableRow> rows = table.getRows();
-                int rowCt = 0;
-                int colCt = 0;
-                int nRows = 3;
-                int nCols = 3;
-                for (XWPFTableRow row : rows) {
-                    // get table row properties (trPr)
-                    CTTrPr trPr = row.getCtRow().addNewTrPr();
-                    // set row height; units = twentieth of a point, 360 = 0.25"
-                    CTHeight ht = trPr.addNewTrHeight();
-                    ht.setVal(BigInteger.valueOf(360));
-                    // get the cells in this row
-                    List<XWPFTableCell> cells = row.getTableCells();
-                    // add content to each cell
-                    for (XWPFTableCell cell : cells) {
-                        // get a table cell properties element (tcPr)
-                        CTTcPr tcpr = cell.getCTTc().addNewTcPr();
-                        // set vertical alignment to "center"
-                        CTVerticalJc va = tcpr.addNewVAlign();
-                        va.setVal(STVerticalJc.CENTER);
-                        // create cell color element
-                        CTShd ctshd = tcpr.addNewShd();
-                        ctshd.setColor("auto");
-                        ctshd.setVal(STShd.CLEAR);
-                        if (rowCt == 0) {
-                            // header row
-                            ctshd.setFill("A7BFDE");
-                        }
-                        colCt++;
-                    }
-                    // for cell
-                    colCt = 0;
-                    rowCt++;
-                }
 
-                // add Some spaces between tables
+
+
+
+
+
+                // add borders to table
+            table.setInsideHBorder(XWPFTable.XWPFBorderType.SINGLE, 8, 0, "2E8BC0");
+            table.setInsideVBorder(XWPFTable.XWPFBorderType.SINGLE , 8, 0, "2E8BC0");
+
+            table.setTopBorder(XWPFTable.XWPFBorderType.SINGLE, 8, 0, "2E8BC0");
+            table.setBottomBorder(XWPFTable.XWPFBorderType.SINGLE, 8, 0, "2E8BC0");
+            table.setLeftBorder(XWPFTable.XWPFBorderType.SINGLE, 8, 0, "2E8BC0");
+            table.setRightBorder(XWPFTable.XWPFBorderType.SINGLE, 8, 0, "2E8BC0");
+
+
+
+
+
+
+            // add Some spaces between tables
             XWPFParagraph paragraph6= document.createParagraph();
 
 
@@ -222,23 +215,60 @@ public class OperationController implements OperationApi {
             tableRowThree_consultant.getCell(2).setText("Tanguy.lapereye@adservio.fr");
             tableRowThree_consultant.getCell(3).setText("01 587 79368");
 
+            // Setting border for the consultants table
+            table_consultants.setInsideHBorder(XWPFTable.XWPFBorderType.SINGLE, 8, 0, "2E8BC0");
+            table_consultants.setInsideVBorder(XWPFTable.XWPFBorderType.SINGLE, 8, 0, "2E8BC0");
+            table_consultants.setTopBorder(XWPFTable.XWPFBorderType.SINGLE, 8, 0, "2E8BC0");
+            table_consultants.setBottomBorder(XWPFTable.XWPFBorderType.SINGLE, 8, 0, "2E8BC0");
+            table_consultants.setLeftBorder(XWPFTable.XWPFBorderType.SINGLE, 8, 0, "2E8BC0");
+            table_consultants.setRightBorder(XWPFTable.XWPFBorderType.SINGLE, 8, 0, "2E8BC0");
+
+            // align the content of the table
+
+            table_consultant_RowOne.getCell(0).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+            table_consultant_RowOne.getCell(1).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+            table_consultant_RowOne.getCell(2).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+            table_consultant_RowOne.getCell(3).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+
+            tableRowTwo_consultant.getCell(0).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+            tableRowTwo_consultant.getCell(1).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+            tableRowTwo_consultant.getCell(2).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+            tableRowTwo_consultant.getCell(3).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+
+            tableRowThree_consultant.getCell(0).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+            tableRowThree_consultant.getCell(1).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+            tableRowThree_consultant.getCell(2).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+            tableRowThree_consultant.getCell(3).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+
+            //Create a footer
+            // create header-footer
+            XWPFHeaderFooterPolicy headerFooterPolicy = document.getHeaderFooterPolicy();
+            if (headerFooterPolicy == null) headerFooterPolicy = document.createHeaderFooterPolicy();
+            XWPFFooter footer = headerFooterPolicy.createFooter(XWPFHeaderFooterPolicy.DEFAULT);
+
+            XWPFParagraph f =footer.createParagraph() ;
+            XWPFRun run_footer_img = f.createRun() ;
+            /**
+            String imgFile_adservio = "/home/alaa/Images/adservio.jpg";
+            FileInputStream ad = new FileInputStream(imgFile_adservio);
+
+            run_footer_img.addPicture(ad, XWPFDocument.PICTURE_TYPE_JPEG, imgFile_adservio, Units.toEMU(75), Units.toEMU(75)); // 200x200 pixel title.setSpacingBetwee
+
+             **/
+
+            XWPFRun run_footer_pagename = f.createRun();
+            run_footer_pagename.setText(" Page ");
+            f.getCTP().addNewFldSimple().setInstr("PAGE \\* MERGEFORMAT");
+            XWPFRun run_footer_pageNumebr = f.createRun();
+            run_footer_pageNumebr.setText(" of ");
+            f.getCTP().addNewFldSimple().setInstr("NUMPAGES \\* MERGEFORMAT");
+            f.setAlignment(ParagraphAlignment.RIGHT);
+            run_footer_pageNumebr.setColor("2E8BC0");
+            run_footer_pagename.setColor("2E8BC0");
+            run_footer_pageNumebr.setBold(true);
+            run_footer_pagename.setBold(true);
 
 
-            // Adding a footer
-
-            CTP ctp = CTP.Factory.newInstance();
-            CTR ctr = ctp.addNewR();
-            CTRPr rpr = ctr.addNewRPr();
-            CTText textt = ctr.addNewT();
-            textt.setStringValue( " Page 1" );
-            XWPFParagraph codePara = new XWPFParagraph( ctp, document );
-            codePara.setBorderBottom(Borders.BASIC_BLACK_DASHES);
-            codePara.setAlignment(ParagraphAlignment.RIGHT);
-            XWPFParagraph[] newparagraphs = new XWPFParagraph[1];
-            newparagraphs[0] = codePara;
-            CTSectPr sectPr = document.getDocument().getBody().addNewSectPr();
-            XWPFHeaderFooterPolicy headerFooterPolicy = new  XWPFHeaderFooterPolicy( document, sectPr );
-            headerFooterPolicy.createFooter( STHdrFtr.DEFAULT, newparagraphs );
 
 
             adservio.close();
