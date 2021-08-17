@@ -1,68 +1,80 @@
 package com.alaa.auth2.controller;
 
 import com.alaa.auth2.controller.api.OperationApi;
+import com.alaa.auth2.dto.InformationDto;
 import com.alaa.auth2.dto.ResponseDto;
+import com.alaa.auth2.handlers.ErrorDto;
 import com.alaa.auth2.service.OperationService;
 import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
 
+import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.util.Units;
 import org.apache.poi.xwpf.model.XWPFHeaderFooterPolicy;
 import org.apache.poi.xwpf.usermodel.*;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.*;
 
 
+import javax.validation.Valid;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @Api
 @RequestMapping("/api")
 @RequiredArgsConstructor
 @RestController
-public class OperationController implements OperationApi {
+@Slf4j
+public class InformationController implements OperationApi {
     private OperationService operationService ;
 
-    @PostMapping("/generate")
-    public ResponseDto generateDoc() {
+    @PostMapping(value = "/generate/doc", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+
+    public ResponseDto generateDoc(@RequestBody  @Valid  InformationDto informationDto) {
         try {
             XWPFDocument document = new XWPFDocument();
-            FileOutputStream out = new FileOutputStream(new File("/home/alaa/Bureau/lib/test3.docx"));
-
+            FileOutputStream out = new FileOutputStream(new File("src/main/resources/files/test.docx"));
             XWPFParagraph title = document.createParagraph();
+            String imgFile = "src/main/resources/images/adservio.jpg";
+            //TODO rendre dynamique
+            String imgFile2 = "/home/alaa/Images/ratp.png";
 
+            //creation du deux photos
             XWPFRun run_img = title.createRun();
             XWPFRun run_img2 = title.createRun();
-            String imgFile = "/home/alaa/Images/adservio.jpg";
-            String imgFile2 = "/home/alaa/Images/ratp.png";
             FileInputStream adservio = new FileInputStream(imgFile);
-            FileInputStream ratp = new FileInputStream(imgFile2);
+            FileInputStream logo_client = new FileInputStream(imgFile2);
 
             run_img.addPicture(adservio, XWPFDocument.PICTURE_TYPE_JPEG, imgFile, Units.toEMU(150), Units.toEMU(75)); // 200x200 pixel title.setSpacingBetween(5);
-            run_img2.addPicture(ratp, XWPFDocument.PICTURE_TYPE_PNG, imgFile, Units.toEMU(75), Units.toEMU(75)); // 200x200 pixel title.setSpacingBetween(5);
-            for (int i = 0 ; i<5 ; i++) {
+            run_img2.addPicture(logo_client, XWPFDocument.PICTURE_TYPE_PNG, imgFile, Units.toEMU(75), Units.toEMU(75)); // 200x200 pixel title.setSpacingBetween(5);
+            //Ajout de l'espace entre le logo d adservio et le logo client et les aligner
+            for (int i = 0 ; i<6 ; i++) {
                 run_img.addTab() ;
             }
-            run_img.addTab() ;
             title.setAlignment(ParagraphAlignment.BOTH);
             title.setSpacingAfterLines(500);
 
-
+            //Creation du rubrique nom du projet
             XWPFParagraph paragraph = document.createParagraph();
             XWPFRun run = paragraph.createRun();
             run.setBold(true);
-            run.setText("Projet : COPPELIA SEM");
+            run.setText("Projet : " + informationDto.getNom_projet());
             run.setFontSize(20);
             run.setColor("2E8BC0");
             paragraph.setAlignment(ParagraphAlignment.CENTER);
-
             paragraph.setBorderTop(Borders.BASIC_BLACK_DASHES);
             paragraph.setSpacingBeforeLines(500);
 
-            paragraph.setSpacingBetween(2.5);
+            //creation du rubrique rapport journalier
             XWPFParagraph paragraph2 = document.createParagraph();
 
 
@@ -75,6 +87,7 @@ public class OperationController implements OperationApi {
             paragraph2.setSpacingBetween(2.5);
             paragraph2.setBorderBottom(Borders.BASIC_BLACK_DASHES);
 
+            // creation du rubrique rapport des tests
             XWPFParagraph paragraph3 = document.createParagraph();
 
             XWPFRun run3 = paragraph3.createRun();
@@ -85,6 +98,7 @@ public class OperationController implements OperationApi {
             paragraph3.setAlignment(ParagraphAlignment.CENTER);
             paragraph3.setSpacingBetween(2.5);
 
+            // creation du rubrique du
             XWPFParagraph paragraph4 = document.createParagraph();
 
             XWPFRun run4 = paragraph4.createRun();
@@ -94,18 +108,20 @@ public class OperationController implements OperationApi {
             paragraph4.setAlignment(ParagraphAlignment.CENTER);
             paragraph4.setSpacingBetween(2.5);
 
+
+            // creation du rubrique date du test
             XWPFParagraph paragraph5= document.createParagraph();
 
 
             XWPFRun run5 = paragraph5.createRun();
             run.setBold(true);
             run2.setFontSize(20);
-            run5.setText("17/04/2018");
+            run5.setText(informationDto.getDate_test());
             paragraph5.setAlignment(ParagraphAlignment.CENTER);
             paragraph5.setSpacingBetween(2.5);
 
 
-
+            // creation du tableau de l'etat du test
 
             //create table
             XWPFTable table = document.createTable();
@@ -116,104 +132,63 @@ public class OperationController implements OperationApi {
             tableRowOne.addNewTableCell().setText("statut de l'application");
             tableRowOne.addNewTableCell().setText("poursuite des tests");
 
-            //create second row
+            //create the second Row
 
-            //insert a valid logo in the first column
             XWPFTableRow tableRowTwo = table.createRow();
-            XWPFParagraph paragraph_images = tableRowTwo.getCell(0).addParagraph();
-            XWPFRun run_text = paragraph_images.createRun();
-            XWPFRun run_images = paragraph_images.createRun();
-            paragraph_images.setAlignment(ParagraphAlignment.BOTH);
-            run_text.addTab();
-            FileInputStream fis = new FileInputStream("/home/alaa/Images/valid.png");
-            XWPFPicture picture = run_images.addPicture(fis, XWPFDocument.PICTURE_TYPE_PNG, "/home/alaa/Images/valid.png", Units.pixelToEMU(75), Units.pixelToEMU(75));
-
-            //insert a valid logo in the second column
-            XWPFParagraph paragraph_images2 = tableRowTwo.getCell(1).addParagraph();
-            XWPFRun run_text2 = paragraph_images2.createRun();
-            XWPFRun run_images2 = paragraph_images2.createRun();
-            paragraph_images2.setAlignment(ParagraphAlignment.BOTH);
-            run_text2.addTab();
-            FileInputStream fis2 = new FileInputStream("/home/alaa/Images/valid.png");
-            XWPFPicture picture2 = run_images2.addPicture(fis2, XWPFDocument.PICTURE_TYPE_PNG, "/home/alaa/Images/valid.png", Units.pixelToEMU(75), Units.pixelToEMU(75));
-
-            //insert a valid logo in the thrid column
-
-            XWPFParagraph paragraph_images3 = tableRowTwo.getCell(2).addParagraph();
-            XWPFRun run_text3 = paragraph_images3.createRun();
-            XWPFRun run_images3 = paragraph_images3.createRun();
-
-            paragraph_images3.setAlignment(ParagraphAlignment.BOTH);
-            run_text3.addTab();
 
 
-            FileInputStream fis3 = new FileInputStream("/home/alaa/Images/valid.png");
-            XWPFPicture picture3 = run_images3.addPicture(fis3, XWPFDocument.PICTURE_TYPE_PNG, "/home/alaa/Images/valid.png", Units.pixelToEMU(75), Units.pixelToEMU(75));
+            for (int i=0 ; i<3 ; i++) {
+                XWPFParagraph paragraph_images = tableRowTwo.getCell(i).addParagraph();
+                XWPFRun run_text = paragraph_images.createRun();
+                XWPFRun run_images = paragraph_images.createRun();
+                paragraph_images.setAlignment(ParagraphAlignment.BOTH);
+                run_text.addTab();
+                FileInputStream fis = new FileInputStream("src/main/resources/images/valid.png");
+                XWPFPicture picture = run_images.addPicture(fis, XWPFDocument.PICTURE_TYPE_PNG, "src/main/resources/images/valid.png", Units.pixelToEMU(75), Units.pixelToEMU(75));
+                tableRowOne.getCell(i).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
 
-
-
-
-
-            //align the cases of the table in the Center
-            tableRowOne.getCell(0).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
-            tableRowOne.getCell(1).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
-            tableRowOne.getCell(2).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
-
-
-
-
-
-
-
-
-
-                // add borders to table
+            }
+            // add borders to table
             table.setInsideHBorder(XWPFTable.XWPFBorderType.SINGLE, 8, 0, "2E8BC0");
             table.setInsideVBorder(XWPFTable.XWPFBorderType.SINGLE , 8, 0, "2E8BC0");
-
             table.setTopBorder(XWPFTable.XWPFBorderType.SINGLE, 8, 0, "2E8BC0");
             table.setBottomBorder(XWPFTable.XWPFBorderType.SINGLE, 8, 0, "2E8BC0");
             table.setLeftBorder(XWPFTable.XWPFBorderType.SINGLE, 8, 0, "2E8BC0");
             table.setRightBorder(XWPFTable.XWPFBorderType.SINGLE, 8, 0, "2E8BC0");
 
 
-
-
-
-
             // add Some spaces between tables
             XWPFParagraph paragraph6= document.createParagraph();
-
-
             XWPFRun run6 = paragraph6.createRun();
             paragraph6.setSpacingAfterLines(500);
 
 
-                // Create the table of the consultant who did the tests
-
-            //create table
+            // Create the table of the consultant who did the tests
             XWPFTable table_consultants = document.createTable();
-
             //create first row
             XWPFTableRow table_consultant_RowOne = table_consultants.getRow(0);
             table_consultant_RowOne.getCell(0).setText("Nom consultant");
             table_consultant_RowOne.addNewTableCell().setText("Poste consultant");
             table_consultant_RowOne.addNewTableCell().setText("Email RATP Consultant ");
             table_consultant_RowOne.addNewTableCell().setText("Ligne directe RATP ");
+            //align first row
+            for (int i = 0 ; i<3 ; i++ ) {
+                table_consultant_RowOne.getCell(i).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+            }
 
-            //create second row
-            XWPFTableRow tableRowTwo_consultant = table_consultants.createRow();
-            tableRowTwo_consultant.getCell(0).setText("Abir BOUCHNAK");
-            tableRowTwo_consultant.getCell(1).setText("Ingénieur Performance");
-            tableRowTwo_consultant.getCell(2).setText("Abir.bouchenak@adservio.f");
-            tableRowTwo_consultant.getCell(3).setText("01 587 79368");
 
-            //create third row
-            XWPFTableRow tableRowThree_consultant = table_consultants.createRow();
-            tableRowThree_consultant.getCell(0).setText("Tanguy LAPEYRE");
-            tableRowThree_consultant.getCell(1).setText("Consultant Performance");
-            tableRowThree_consultant.getCell(2).setText("Tanguy.lapereye@adservio.fr");
-            tableRowThree_consultant.getCell(3).setText("01 587 79368");
+            for (int i =0 ; i<informationDto.getNombre_consultants() ; i++) {
+                XWPFTableRow tableRow_consultant = table_consultants.createRow();
+                int j =0 ;
+                tableRow_consultant.getCell(j).setText(informationDto.getConsultants().get(i).getNom()) ;
+                tableRow_consultant.getCell(j+1).setText(informationDto.getConsultants().get(i).getPoste());
+                tableRow_consultant.getCell(j+2).setText(informationDto.getConsultants().get(i).getEmail_RATP());
+                tableRow_consultant.getCell(j+3).setText(informationDto.getConsultants().get(i).getLigne_directe_RATP().toString());
+                for (int k = 0 ; k<4 ; k++ ) {
+                    tableRow_consultant.getCell(k).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+                }
+
+            }
 
             // Setting border for the consultants table
             table_consultants.setInsideHBorder(XWPFTable.XWPFBorderType.SINGLE, 8, 0, "2E8BC0");
@@ -223,22 +198,6 @@ public class OperationController implements OperationApi {
             table_consultants.setLeftBorder(XWPFTable.XWPFBorderType.SINGLE, 8, 0, "2E8BC0");
             table_consultants.setRightBorder(XWPFTable.XWPFBorderType.SINGLE, 8, 0, "2E8BC0");
 
-            // align the content of the table
-
-            table_consultant_RowOne.getCell(0).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
-            table_consultant_RowOne.getCell(1).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
-            table_consultant_RowOne.getCell(2).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
-            table_consultant_RowOne.getCell(3).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
-
-            tableRowTwo_consultant.getCell(0).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
-            tableRowTwo_consultant.getCell(1).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
-            tableRowTwo_consultant.getCell(2).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
-            tableRowTwo_consultant.getCell(3).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
-
-            tableRowThree_consultant.getCell(0).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
-            tableRowThree_consultant.getCell(1).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
-            tableRowThree_consultant.getCell(2).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
-            tableRowThree_consultant.getCell(3).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
 
             //Create a footer
             // create header-footer
@@ -249,10 +208,10 @@ public class OperationController implements OperationApi {
             XWPFParagraph f =footer.createParagraph() ;
             XWPFRun run_footer_img = f.createRun() ;
             /**
-            String imgFile_adservio = "/home/alaa/Images/adservio.jpg";
-            FileInputStream ad = new FileInputStream(imgFile_adservio);
+             String imgFile_adservio = "/home/alaa/Images/adservio.jpg";
+             FileInputStream ad = new FileInputStream(imgFile_adservio);
 
-            run_footer_img.addPicture(ad, XWPFDocument.PICTURE_TYPE_JPEG, imgFile_adservio, Units.toEMU(75), Units.toEMU(75)); // 200x200 pixel title.setSpacingBetwee
+             run_footer_img.addPicture(ad, XWPFDocument.PICTURE_TYPE_JPEG, imgFile_adservio, Units.toEMU(75), Units.toEMU(75)); // 200x200 pixel title.setSpacingBetwee
 
              **/
 
@@ -271,11 +230,36 @@ public class OperationController implements OperationApi {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             adservio.close();
             document.write(out);
 
             out.close();
-            System.out.println("createparagraph.docx written successfully");
+
+
+
+
+
+
+
 
         } catch (Exception e) {
             // TODO: handle exception
@@ -283,6 +267,60 @@ public class OperationController implements OperationApi {
         }
         return  ResponseDto.builder().message("success").build() ;
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex)   {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+        final HttpStatus NOTVALIDARGUMENT = HttpStatus.BAD_REQUEST;
+        final ErrorDto errorDto = ErrorDto.builder()
+                .httpCode(NOTVALIDARGUMENT.value())
+                .validationErrors(errors)
+                .build();
+
+        return new ResponseEntity<>(errorDto, NOTVALIDARGUMENT);
     }
+}
+
+
+
+
+
 
 

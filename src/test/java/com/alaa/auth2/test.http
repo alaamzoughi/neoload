@@ -1,5 +1,25 @@
-GET http://localhost:8080/api/token/refresh
+POST http://localhost:8080/api/generate/doc
 Accept: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzd2lsYWgiLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4iLCJleHAiOjE2Mjc0NzE1OTl9.4rROQC6rO7-QNyXpVhpsrjkQp8oRujhSfxScssvXkwc
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzd2lsYWgiLCJyb2xlcyI6WyJSb2xlX1VzZXIiXSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL2xvZ2luIiwiZXhwIjoxNjI5MTk4Mzg2fQ.oGGjg8ckf15ugY3GTOhT0HmzeHt2Gswx5cmz8x0HWlY
 
+{
+  "consultants": [
+    {
+      "email_RATP": "string",
+      "ligne_directe_RATP": 3355344666565,
+      "nom": "string0",
+      "poste": "string"
+    } ,
+    {
+      "email_RATP": "string",
+      "ligne_directe_RATP": 3355344666565,
+      "nom": "string1",
+      "poste": "string"
+    }
+ ],
+  "date_test": "string",
+  "nom_projet": "string",
+  "nombre_consultants": 1
+}
 

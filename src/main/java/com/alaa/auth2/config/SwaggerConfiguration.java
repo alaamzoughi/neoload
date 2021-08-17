@@ -21,7 +21,7 @@ public class SwaggerConfiguration {
         return new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(
                         new ApiInfoBuilder()
-                                .description("AUTH Generator documentation")
+                                .description("Neoload Generator documentation")
                                 .title("AUTH REST API")
                                 .build()
                 )
