@@ -5,6 +5,7 @@ import lombok.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.Date;
 
 
 @Builder
@@ -22,6 +23,9 @@ public class InformationDto {
     private Integer nombre_consultants ;
     @NotNull(message = "Consultant are required")
     private ArrayList<ConsultantDto> consultants ;
+    @NotBlank(message = "nom_client are required")
+    private String nom_client ;
+
 
     @NotNull(message = "logo client are required")
     private String logo_client ;

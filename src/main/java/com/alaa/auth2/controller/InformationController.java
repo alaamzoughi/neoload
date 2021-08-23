@@ -3,28 +3,41 @@ package com.alaa.auth2.controller;
 import com.alaa.auth2.controller.api.OperationApi;
 import com.alaa.auth2.dto.InformationDto;
 import com.alaa.auth2.dto.ResponseDto;
+import com.alaa.auth2.dto.UserDto;
+import com.alaa.auth2.fileManagement.FileStorageService;
 import com.alaa.auth2.handlers.ErrorDto;
+import com.alaa.auth2.model.*;
 import com.alaa.auth2.service.OperationService;
+import com.alaa.auth2.service.TransformedFileService;
+import com.alaa.auth2.service.UploadedOrginalFileService;
+import com.alaa.auth2.service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
 
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.util.Units;
 import org.apache.poi.xwpf.model.XWPFHeaderFooterPolicy;
 import org.apache.poi.xwpf.usermodel.*;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 
-import javax.validation.Valid;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,14 +48,52 @@ import java.util.Map;
 @RestController
 @Slf4j
 public class InformationController implements OperationApi {
+    @Autowired
     private OperationService operationService ;
+    @Autowired
+    private FileStorageService fileStorageService ;
+    @Autowired
+    private UploadedOrginalFileService uploadedOrginalFileService ;
+    @Autowired
+    private TransformedFileService transformedFileService ;
+    @Autowired
+    private UserService userService ;
 
-    @PostMapping(value = "/generate/doc", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/generate/doc")
 
-    public ResponseDto generateDoc(@RequestBody  @Valid  InformationDto informationDto) {
+    public ResponseDto generateDoc(
+                                   @Nullable @RequestParam(value = "file",required = false) MultipartFile file,
+                                   @Nullable @RequestParam(value = "image",required = false) MultipartFile image,
+                                   @RequestParam(value = "input", required = false) String s) {
         try {
+            ObjectMapper om = new ObjectMapper() ;
+            InformationDto informationDto = null ;
+            informationDto = om.readValue(s,InformationDto.class) ;
             XWPFDocument document = new XWPFDocument();
             FileOutputStream out = new FileOutputStream(new File("src/main/resources/files/test.docx"));
+
+
+            // upload du document original dans la base de données
+
+            String fileName = fileStorageService.storeFile(file);
+
+            String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/downloadFile/")
+                    .path(fileName)
+                    .toUriString();
+
+
+            UploadedOrginalFile document_original = UploadedOrginalFile.builder()
+                    .fileDownloadUri(fileDownloadUri)
+                    .size(file.getSize())
+                    .fileType(file.getContentType())
+                    .fileName(fileName)
+                    .build() ;
+
+            UploadedOrginalFile d = uploadedOrginalFileService.save(document_original) ;
+
+
+            // creation du document modifié
             XWPFParagraph title = document.createParagraph();
             String imgFile = "src/main/resources/images/adservio.jpg";
             //TODO rendre dynamique
@@ -52,10 +103,13 @@ public class InformationController implements OperationApi {
             XWPFRun run_img = title.createRun();
             XWPFRun run_img2 = title.createRun();
             FileInputStream adservio = new FileInputStream(imgFile);
-            FileInputStream logo_client = new FileInputStream(imgFile2);
+
+            //FileInputStream logo_client = new FileInputStream(imgFile2);
+            InputStream logo_client = image.getInputStream();
+
 
             run_img.addPicture(adservio, XWPFDocument.PICTURE_TYPE_JPEG, imgFile, Units.toEMU(150), Units.toEMU(75)); // 200x200 pixel title.setSpacingBetween(5);
-            run_img2.addPicture(logo_client, XWPFDocument.PICTURE_TYPE_PNG, imgFile, Units.toEMU(75), Units.toEMU(75)); // 200x200 pixel title.setSpacingBetween(5);
+            run_img2.addPicture(logo_client, XWPFDocument.PICTURE_TYPE_PNG, null, Units.toEMU(75), Units.toEMU(75)); // 200x200 pixel title.setSpacingBetween(5);
             //Ajout de l'espace entre le logo d adservio et le logo client et les aligner
             for (int i = 0 ; i<6 ; i++) {
                 run_img.addTab() ;
@@ -210,9 +264,7 @@ public class InformationController implements OperationApi {
             /**
              String imgFile_adservio = "/home/alaa/Images/adservio.jpg";
              FileInputStream ad = new FileInputStream(imgFile_adservio);
-
              run_footer_img.addPicture(ad, XWPFDocument.PICTURE_TYPE_JPEG, imgFile_adservio, Units.toEMU(75), Units.toEMU(75)); // 200x200 pixel title.setSpacingBetwee
-
              **/
 
             XWPFRun run_footer_pagename = f.createRun();
@@ -227,25 +279,237 @@ public class InformationController implements OperationApi {
             run_footer_pageNumebr.setBold(true);
             run_footer_pagename.setBold(true);
 
+            // Sauter une page
+            XWPFParagraph paragraph_break = document.createParagraph();
+            paragraph_break.setPageBreak(true);
+
+            //Creer la premiere partie  "Faits Marquants "
+
+            XWPFParagraph paragraph_1 = document.createParagraph();
+            XWPFRun run_paragraphe_1 = paragraph_1.createRun();
+            run_paragraphe_1.setBold(true);
+            run_paragraphe_1.setText("1. FAITS MARQUANTS");
+            run_paragraphe_1.setFontSize(15);
+            run_paragraphe_1.setColor("2E8BC0");
+            paragraph_1.setAlignment(ParagraphAlignment.LEFT);
+            paragraph_1.setBorderBottom(Borders.BASIC_BLACK_DASHES);
+
+            // Sauter une page
+            XWPFParagraph paragraph_break_2 = document.createParagraph();
+            paragraph_break_2.setPageBreak(true);
+
+            //Creer la deuxième partie  "2. ACTIVITES PRECEDENTES"
+
+            XWPFParagraph paragraph_2 = document.createParagraph();
+            XWPFRun run_paragraphe_2 = paragraph_2.createRun();
+            run_paragraphe_2.setBold(true);
+            run_paragraphe_2.setText("2. ACTIVITES PRECEDENTES");
+            run_paragraphe_2.setFontSize(15);
+            run_paragraphe_2.setColor("2E8BC0");
+            paragraph_2.setAlignment(ParagraphAlignment.LEFT);
+            paragraph_2.setBorderBottom(Borders.BASIC_BLACK_DASHES);
+            paragraph_2.setSpacingAfterLines(300);
+
+
+            // creer la table des activités précedentes
+            XWPFTable table_activités = document.createTable();
+            //create first row
+            XWPFTableRow table_acctivités_RowOne = table_activités.getRow(0);
+            table_acctivités_RowOne.getCell(0).setText("Phase");
+            table_acctivités_RowOne.addNewTableCell().setText("Tâche");
+            table_acctivités_RowOne.addNewTableCell().setText("Statut");
+            table_acctivités_RowOne.addNewTableCell().setText("Date Initiale");
+            table_acctivités_RowOne.addNewTableCell().setText("Date ");
+
+            //align first row
+            for (int i = 0 ; i<5 ; i++ ) {
+                table_acctivités_RowOne.getCell(i).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+            }
+            //creer deux lignes vides
+
+            for (int i =0 ; i<2 ; i++) {
+                XWPFTableRow tableRow_activité = table_activités.createRow();
+            }
+
+            //set Spacing
+
+            XWPFParagraph paragraph_space= document.createParagraph();
+            XWPFRun run_space = paragraph_space.createRun();
+            paragraph_space.setSpacingAfterLines(300);
 
 
 
 
+            //Creer la troisème partie  "3. ACTIVITES EN COURS"
+
+            XWPFParagraph paragraph_3 = document.createParagraph();
+            XWPFRun run_paragraphe_3 = paragraph_3.createRun();
+            run_paragraphe_3.setBold(true);
+            run_paragraphe_3.setText("3. ACTIVITES EN COURS");
+            run_paragraphe_3.setFontSize(15);
+            run_paragraphe_3.setColor("2E8BC0");
+            paragraph_3.setAlignment(ParagraphAlignment.LEFT);
+            paragraph_3.setBorderBottom(Borders.BASIC_BLACK_DASHES);
+            paragraph_3.setSpacingAfterLines(300);
+
+
+            // creer la table des activités précedentes
+            XWPFTable table_activités_en_cours = document.createTable();
+            //create first row
+            XWPFTableRow table_activités_en_cours_RowOne = table_activités_en_cours.getRow(0);
+            table_activités_en_cours_RowOne.getCell(0).setText("Phase");
+            table_activités_en_cours_RowOne.addNewTableCell().setText("Tâche");
+            table_activités_en_cours_RowOne.addNewTableCell().setText("Statut");
+            table_activités_en_cours_RowOne.addNewTableCell().setText("Date Initiale");
+            table_activités_en_cours_RowOne.addNewTableCell().setText("Date ");
+
+            //align first row
+            for (int i = 0 ; i<5 ; i++ ) {
+                table_activités_en_cours_RowOne.getCell(i).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+            }
+            //creer deux lignes vides
+
+            for (int i =0 ; i<2 ; i++) {
+                XWPFTableRow tableRow_activité_enc_cours_2 = table_activités_en_cours.createRow();
+            }
+
+            //set Spacing
+
+            XWPFParagraph paragraph_space_2= document.createParagraph();
+            XWPFRun run_space_2 = paragraph_space.createRun();
+            paragraph_space_2.setSpacingAfterLines(300);
+
+
+            //Creer la quatrième partie  "4. PROBLEMES RENCONTRES"
+
+            XWPFParagraph paragraph_4 = document.createParagraph();
+            XWPFRun run_paragraphe_4 = paragraph_4.createRun();
+            run_paragraphe_4.setBold(true);
+            run_paragraphe_4.setText("4. PROBLEMES RENCONTRES");
+            run_paragraphe_4.setFontSize(15);
+            run_paragraphe_4.setColor("2E8BC0");
+            paragraph_4.setAlignment(ParagraphAlignment.LEFT);
+            paragraph_4.setBorderBottom(Borders.BASIC_BLACK_DASHES);
+            paragraph_4.setSpacingAfterLines(300);
+
+
+            // creer la table des problèmes rencontrés
+            XWPFTable table_problèmes_rencontrés = document.createTable();
+            //create first row
+            XWPFTableRow table_problèmes_rencontrés_RowOne = table_problèmes_rencontrés.getRow(0);
+            table_problèmes_rencontrés_RowOne.getCell(0).setText("ID");
+            table_problèmes_rencontrés_RowOne.addNewTableCell().setText("Description");
+            table_problèmes_rencontrés_RowOne.addNewTableCell().setText("Statut");
+            table_problèmes_rencontrés_RowOne.addNewTableCell().setText("Date");
+
+
+            //align first row
+            for (int i = 0 ; i<4 ; i++ ) {
+                table_problèmes_rencontrés_RowOne.getCell(i).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+            }
+            //creer deux lignes vides
+
+            for (int i =0 ; i<2 ; i++) {
+                XWPFTableRow tableRow_problèmes_2 = table_problèmes_rencontrés.createRow();
+            }
+
+            //set Spacing
+
+            XWPFParagraph paragraph_space_3= document.createParagraph();
+            XWPFRun run_space_3 = paragraph_space_3.createRun();
+            paragraph_space_3.setSpacingAfterLines(300);
+
+
+            //Creer la cinquième partie  "Changements"
+
+            XWPFParagraph paragraph_5 = document.createParagraph();
+            XWPFRun run_paragraphe_5= paragraph_5.createRun();
+            run_paragraphe_5.setBold(true);
+            run_paragraphe_5.setText("5. CHANGEMENTS");
+            run_paragraphe_5.setFontSize(15);
+            run_paragraphe_5.setColor("2E8BC0");
+            paragraph_5.setAlignment(ParagraphAlignment.LEFT);
+            paragraph_5.setBorderBottom(Borders.BASIC_BLACK_DASHES);
+            paragraph_5.setSpacingAfterLines(300);
+
+
+            // creer la table des problèmes rencontrés
+            XWPFTable table_changements = document.createTable();
+            //create first row
+            XWPFTableRow table_changements_RowOne = table_changements.getRow(0);
+            table_changements_RowOne.getCell(0).setText("ID");
+            table_changements_RowOne.addNewTableCell().setText("Description");
+            table_changements_RowOne.addNewTableCell().setText("Date");
+
+
+            //align first row
+            for (int i = 0 ; i<2 ; i++ ) {
+                table_changements_RowOne.getCell(i).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+            }
+            //creer deux lignes vides
+
+            for (int i =0 ; i<2 ; i++) {
+                XWPFTableRow tableRow_changements_2 = table_changements.createRow();
+            }
+
+            //set Spacing
+
+            XWPFParagraph paragraph_space_4= document.createParagraph();
+            XWPFRun run_space_4 = paragraph_space_4.createRun();
+            paragraph_space_4.setSpacingAfterLines(300);
 
 
 
+            //Creer la sixième  "6. PLANNING ACTUALISES"
+
+            XWPFParagraph paragraph_6 = document.createParagraph();
+            XWPFRun run_paragraphe_6= paragraph_6.createRun();
+            run_paragraphe_6.setBold(true);
+            run_paragraphe_6.setText("6. PLANNING ACTUALISES");
+            run_paragraphe_6.setFontSize(15);
+            run_paragraphe_6.setColor("2E8BC0");
+            paragraph_6.setAlignment(ParagraphAlignment.LEFT);
+            paragraph_6.setBorderBottom(Borders.BASIC_BLACK_DASHES);
+            paragraph_6.setSpacingAfterLines(300);
 
 
+            // creer la table des problèmes rencontrés
+            XWPFTable table_planning = document.createTable();
+            //create first row
+            XWPFTableRow table_planning_RowOne = table_planning.getRow(0);
+            table_planning_RowOne.getCell(0).setText("ID");
+            table_planning_RowOne.addNewTableCell().setText("Description");
+            table_planning_RowOne.addNewTableCell().setText("Date");
 
 
+            //align first row
+            for (int i = 0 ; i<2 ; i++ ) {
+                table_planning_RowOne.getCell(i).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
+            }
+            //creer deux lignes vides
+
+            for (int i =0 ; i<2 ; i++) {
+                XWPFTableRow tableRow_planning_2 = table_changements.createRow();
+            }
+
+            //set Spacing
+
+            XWPFParagraph paragraph_space_5= document.createParagraph();
+            XWPFRun run_space_5 = paragraph_space_5.createRun();
+            paragraph_space_5.setSpacingAfterLines(300);
 
 
+            //Creer la sixième  "7. ANNEXES – RESULTATS RAPIDES"
 
-
-
-
-
-
+            XWPFParagraph paragraph_7 = document.createParagraph();
+            XWPFRun run_paragraphe_7= paragraph_7.createRun();
+            run_paragraphe_7.setBold(true);
+            run_paragraphe_7.setText("7. ANNEXES – RESULTATS RAPIDES");
+            run_paragraphe_7.setFontSize(15);
+            run_paragraphe_7.setColor("2E8BC0");
+            paragraph_7.setAlignment(ParagraphAlignment.LEFT);
+            paragraph_7.setBorderBottom(Borders.BASIC_BLACK_DASHES);
+            paragraph_7.setSpacingAfterLines(300);
 
 
 
@@ -254,9 +518,48 @@ public class InformationController implements OperationApi {
 
             out.close();
 
+            // upload du document modifié
+            String modifiedFileName = informationDto.getNom_projet()+"_"+informationDto.getDate_test() ;
+
+            String modifiedfileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/downloadFile/")
+                    .path(modifiedFileName)
+                    .toUriString();
+
+
+            TransformedFile document_transformé = TransformedFile.builder()
+                    .fileDownloadUri(modifiedfileDownloadUri)
+                    .fileType("docx")
+                    .size(file.getSize())
+                    .fileName(modifiedFileName)
+                    .build() ;
+
+            TransformedFile t = transformedFileService.save(document_transformé) ;
+
+
+            //get authentificated username
+            String loggedInUser =  SecurityContextHolder.getContext().getAuthentication().getName();
+
+            User u = userService.getUser(loggedInUser) ;
 
 
 
+            Operation operation = Operation.builder()
+                    .dateTest(informationDto.getDate_test())
+                    .nomClient(informationDto.getNom_client())
+                    .logoClient("ss")
+                    .nomDocument("ddqsddsq")
+                    .uploadedOrginalFile(d)
+                    .transformedFile(t)
+                    .user(u)
+                    .build() ;
+
+            Operation operation_finale = operationService.save(operation) ;
+
+            d.setOperation(operation_finale);
+            t.setOperation(operation_finale);
+            transformedFileService.save(t) ;
+            uploadedOrginalFileService.save(d) ;
 
 
 

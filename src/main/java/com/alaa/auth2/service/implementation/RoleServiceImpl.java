@@ -1,9 +1,7 @@
 package com.alaa.auth2.service.implementation;
 
 import com.alaa.auth2.dto.RoleDto;
-import com.alaa.auth2.dto.UserDto;
 import com.alaa.auth2.model.Role;
-import com.alaa.auth2.model.User;
 import com.alaa.auth2.repo.RoleRepo;
 import com.alaa.auth2.service.RoleService;
 import lombok.extern.slf4j.Slf4j;

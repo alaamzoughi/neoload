@@ -67,15 +67,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public ResponseDto addRoleToUser(String username, String roleName) {
-        /**
-        Optional<Integer> role_db_id = Optional.ofNullable(roleRepo.findByName(roleName).getId());
-        Optional<Integer> user_db_id = Optional.ofNullable(userRepo.findByUsername(username).getId());
-        System.out.println(role_db_id );
-        System.out.println(user_db_id );
 
-        Integer existing_role_id = roleRepo.existingRole(user_db_id , role_db_id) ;
-        return existing_role_id ;
-         **/
 
         User user = userRepo.findByUsername(username) ;
         Role role = roleRepo.findByName(roleName) ;
@@ -128,8 +120,22 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public User findByUsername(String username) {
-        return userRepo.findByUsername(username);
+    public UserDto findByUsername(String username) {
+        ModelMapper modelMapper = new ModelMapper();
+        List<User> users =  userRepo.findAll();
+        User ourUser = null;
+        for (User u: users ) {
+            if (u.getUsername().equals(username)) {
+                ourUser = u ;
+            }
+        }
+        UserDto userDto = modelMapper.map(ourUser, UserDto.class);
+        return  userDto ;
+    }
+
+    @Override
+    public User findByName(String name) {
+        return userRepo.findByName(name);
     }
 
     @Override

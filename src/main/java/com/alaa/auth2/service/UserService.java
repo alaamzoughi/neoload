@@ -17,8 +17,9 @@ public interface UserService {
     List<UserDto> getUsers() ;
     String getCurrentUsername() ;
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException ;
-    User findByUsername(String username ) ;
+    UserDto findByUsername(String username ) ;
     Optional<User> findById (Integer id) ;
     ResponseDto delete(Integer id) throws NotFoundException;
     public ResponseDto resetPassword(Integer id,  String password) throws NotFoundException ;
+    public User findByName(String name) ;
 }

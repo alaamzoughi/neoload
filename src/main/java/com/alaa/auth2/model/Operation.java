@@ -1,11 +1,11 @@
 package com.alaa.auth2.model;
 
 
+import com.sun.istack.Nullable;
 import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Date;
 
 @NoArgsConstructor
 @Getter
@@ -29,15 +29,23 @@ public class Operation implements Serializable {
     @Column
     private String logoClient ;
     @Column
-    private Date dateTest ;
-    @Column
-    private String documentOriginal ;
-    @Column
-    private String documentModifié ;
+    private String dateTest ;
 
-    @ManyToOne
-    @JoinColumn(name = "idUtilisateur")
-    private Utilisateur utilisateur ;
+    @Nullable
+    @OneToOne()
+    private UploadedOrginalFile uploadedOrginalFile ;
+
+    @Nullable
+    @OneToOne()
+    private TransformedFile transformedFile ;
+
+    @Nullable
+    @ManyToOne()
+    @JoinColumn(name = "user_id")
+    private User user ;
+
+
+
 
 
 

@@ -9,6 +9,7 @@ import com.alaa.auth2.service.UserService;
 import io.swagger.annotations.Api;
 import javassist.NotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Api
 @RestController
 @RequestMapping("/api")
@@ -58,6 +60,15 @@ public class UserController {
     @DeleteMapping("/user/delete/{id}")
     public ResponseDto deleteUser(@PathVariable Integer id) throws NotFoundException {
         return userService.delete(id) ;
+
+
+    }
+
+    @GetMapping("/us")
+    public UserDto getUser() throws NotFoundException {
+
+            String username = "swilah" ;
+            return userService.findByUsername(username) ;
 
 
     }
