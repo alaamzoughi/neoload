@@ -1,9 +1,13 @@
 package com.alaa.auth2.dto;
 
 
-import lombok.*;
+import com.alaa.auth2.model.TransformedFile;
+import com.alaa.auth2.model.UploadedOrginalFile;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
-import javax.persistence.Column;
 import javax.validation.constraints.NotBlank;
 import java.util.Date;
 
@@ -15,27 +19,24 @@ import java.util.Date;
 public class OperationDto {
 
     private Integer id;
-    @NotBlank(message = "nom document is required")
+
     private String nomDocument ;
 
-    @NotBlank(message = "Nom client is required")
+
     private String nomClient ;
 
-    @NotBlank(message = "Nom projet is required")
     private String nomProjet ;
 
-    @NotBlank(message = "logo client  is required")
 
     private String logoClient ;
-    @NotBlank(message = "date de Test is required")
 
-    private String dateTest ;
-    @NotBlank(message = "date de Test is required")
 
-    @NotBlank(message = "document original is required")
-    private String documentOriginal ;
+    private Date dateTest ;
 
-    private String documentModifié ;
+
+    private TransformedFile transformedFile ;
+
+    private UploadedOrginalFile uploadedOrginalFile;
 
     private UserDto user ;
 

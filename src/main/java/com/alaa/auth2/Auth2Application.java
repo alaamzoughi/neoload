@@ -28,14 +28,16 @@ public class   Auth2Application {
     }
 
 
-    /**
+
+
     @Bean
     CommandLineRunner run (UserService userService) {
         return args -> {
-           userService.saveUser(new UserDto(null ,"salah" , "swilah" , "photo" , null , "123")) ;
+           userService.saveUser(new UserDto(null ,"ahmed" , "hamidou" , "photo" , null , "123")) ;
         } ;
     }
-    **/
+
+
 
 
 

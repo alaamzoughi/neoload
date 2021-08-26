@@ -18,7 +18,6 @@ import java.util.Date;
 @Entity
 @Builder
 @Table(name = "uploaded_orginal_file")
-@JsonIgnoreProperties(value = { "operation" })
 public class UploadedOrginalFile implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -35,6 +34,7 @@ public class UploadedOrginalFile implements Serializable {
     @OneToOne()
     @Nullable
     @JoinColumn(name = "operation_id")
+    @JsonIgnore
     private Operation operation ;
 
 

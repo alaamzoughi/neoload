@@ -34,12 +34,14 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 
+import javax.validation.Valid;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 
 @Api
@@ -59,19 +61,16 @@ public class InformationController implements OperationApi {
     @Autowired
     private UserService userService ;
 
+   //
+
     @PostMapping(value = "/generate/doc")
 
+    //
     public ResponseDto generateDoc(
                                    @Nullable @RequestParam(value = "file",required = false) MultipartFile file,
                                    @Nullable @RequestParam(value = "image",required = false) MultipartFile image,
-                                   @RequestParam(value = "input", required = false) String s) {
+                                   @RequestParam(value = "input", required = false) String s ) {
         try {
-            ObjectMapper om = new ObjectMapper() ;
-            InformationDto informationDto = null ;
-            informationDto = om.readValue(s,InformationDto.class) ;
-            XWPFDocument document = new XWPFDocument();
-            FileOutputStream out = new FileOutputStream(new File("src/main/resources/files/test.docx"));
-
 
             // upload du document original dans la base de données
 
@@ -91,6 +90,16 @@ public class InformationController implements OperationApi {
                     .build() ;
 
             UploadedOrginalFile d = uploadedOrginalFileService.save(document_original) ;
+            ObjectMapper om = new ObjectMapper() ;
+            InformationDto informationDto = null ;
+            informationDto = om.readValue(s,InformationDto.class) ;
+            XWPFDocument document = new XWPFDocument();
+            int random_int = (int)Math.floor(Math.random());
+            String modifiedFileName = informationDto.getNom_projet() +"_"+informationDto.getNom_client()+random_int+".docx" ;
+            FileOutputStream out = new FileOutputStream(new File("src/main/resources/files/"+modifiedFileName));
+
+
+
 
 
             // creation du document modifié
@@ -170,7 +179,10 @@ public class InformationController implements OperationApi {
             XWPFRun run5 = paragraph5.createRun();
             run.setBold(true);
             run2.setFontSize(20);
-            run5.setText(informationDto.getDate_test());
+            Date date = informationDto.getDate_test();
+            DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+            String strDate = dateFormat.format(date);
+            run5.setText(strDate);
             paragraph5.setAlignment(ParagraphAlignment.CENTER);
             paragraph5.setSpacingBetween(2.5);
 
@@ -186,6 +198,13 @@ public class InformationController implements OperationApi {
             tableRowOne.addNewTableCell().setText("statut de l'application");
             tableRowOne.addNewTableCell().setText("poursuite des tests");
 
+            //insertion des logo des etats de test
+            String logo_a_inserer = null ;
+            String VALID = "src/main/resources/images/valid.png" ;
+            String ECHEC = "src/main/resources/images/croix.png" ;
+
+
+
             //create the second Row
 
             XWPFTableRow tableRowTwo = table.createRow();
@@ -197,8 +216,34 @@ public class InformationController implements OperationApi {
                 XWPFRun run_images = paragraph_images.createRun();
                 paragraph_images.setAlignment(ParagraphAlignment.BOTH);
                 run_text.addTab();
-                FileInputStream fis = new FileInputStream("src/main/resources/images/valid.png");
-                XWPFPicture picture = run_images.addPicture(fis, XWPFDocument.PICTURE_TYPE_PNG, "src/main/resources/images/valid.png", Units.pixelToEMU(75), Units.pixelToEMU(75));
+
+                if (i==0) {
+                    if (informationDto.isStatut_de_test()) {
+                        logo_a_inserer = VALID;
+                    } else {
+                        logo_a_inserer = ECHEC;
+                    }
+                }
+
+                if (i==1) {
+                    if (informationDto.isStatut_de_application()) {
+                        logo_a_inserer = VALID;
+                    } else {
+                        logo_a_inserer = ECHEC;
+                    }
+                }
+                if (i==2) {
+                            if (informationDto.isPoursuite_des_tests()) {
+                                logo_a_inserer = VALID ;
+                            }
+                            else {
+                                logo_a_inserer = ECHEC  ;
+                            }
+                }
+
+
+                FileInputStream fis = new FileInputStream(logo_a_inserer);
+                XWPFPicture picture = run_images.addPicture(fis, XWPFDocument.PICTURE_TYPE_PNG, null, Units.pixelToEMU(75), Units.pixelToEMU(75));
                 tableRowOne.getCell(i).getParagraphs().get(0).setAlignment(ParagraphAlignment.CENTER);
 
             }
@@ -519,7 +564,7 @@ public class InformationController implements OperationApi {
             out.close();
 
             // upload du document modifié
-            String modifiedFileName = informationDto.getNom_projet()+"_"+informationDto.getDate_test() ;
+
 
             String modifiedfileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
                     .path("/downloadFile/")
@@ -556,10 +601,7 @@ public class InformationController implements OperationApi {
 
             Operation operation_finale = operationService.save(operation) ;
 
-            d.setOperation(operation_finale);
-            t.setOperation(operation_finale);
-            transformedFileService.save(t) ;
-            uploadedOrginalFileService.save(d) ;
+
 
 
 

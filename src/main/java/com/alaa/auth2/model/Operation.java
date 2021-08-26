@@ -6,6 +6,8 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 @NoArgsConstructor
 @Getter
@@ -29,7 +31,8 @@ public class Operation implements Serializable {
     @Column
     private String logoClient ;
     @Column
-    private String dateTest ;
+    @Temporal(TemporalType.DATE)
+    private Date dateTest ;
 
     @Nullable
     @OneToOne()

@@ -18,7 +18,6 @@ import java.io.Serializable;
 @Entity
 @Builder
 @Table(name = "transformed_file")
-@JsonIgnoreProperties(value = { "operation" })
 public class TransformedFile implements Serializable {
 
     @Id
@@ -36,5 +35,6 @@ public class TransformedFile implements Serializable {
     @OneToOne()
     @Nullable
     @JoinColumn(name = "operation_id")
+    @JsonIgnore
     private Operation operation ;
 }
