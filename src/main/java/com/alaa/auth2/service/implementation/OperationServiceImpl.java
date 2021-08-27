@@ -2,6 +2,7 @@ package com.alaa.auth2.service.implementation;
 
 
 import com.alaa.auth2.dto.OperationDto;
+import com.alaa.auth2.exception.EntityNotFoundException;
 import com.alaa.auth2.model.Operation;
 import com.alaa.auth2.model.User;
 import com.alaa.auth2.repo.OperationRepository;
@@ -68,6 +69,9 @@ public class OperationServiceImpl implements OperationService {
                 OperationDto operationDto= modelMapper.map(o, OperationDto.class);
                 list_dto.add(operationDto) ;
             }
+            else {
+                throw new EntityNotFoundException("user non existant ");
+            }
         }
         return list_dto ;
 
@@ -86,6 +90,9 @@ public class OperationServiceImpl implements OperationService {
                 OperationDto operationDto= modelMapper.map(o, OperationDto.class);
                 list_dto.add(operationDto) ;
             }
+            else {
+                throw new EntityNotFoundException("client non existant ");
+            }
         }
         return list_dto ;
     }
@@ -100,6 +107,9 @@ public class OperationServiceImpl implements OperationService {
                 ModelMapper modelMapper = new ModelMapper() ;
                 OperationDto operationDto= modelMapper.map(o, OperationDto.class);
                 list_dto.add(operationDto) ;
+            }
+            else {
+                throw new EntityNotFoundException("client non existant ");
             }
         }
         return list_dto ;
@@ -116,6 +126,9 @@ public class OperationServiceImpl implements OperationService {
                 OperationDto operationDto= modelMapper.map(o, OperationDto.class);
                 list_dto.add(operationDto) ;
             }
+            else {
+                throw new EntityNotFoundException("date non existant ");
+            }
         }
         return list_dto ;
     }
@@ -130,6 +143,9 @@ public class OperationServiceImpl implements OperationService {
                 ModelMapper modelMapper = new ModelMapper() ;
                 OperationDto operationDto= modelMapper.map(o, OperationDto.class);
                 list_dto.add(operationDto) ;
+            }
+            else {
+                throw new EntityNotFoundException("date non existant ");
             }
         }
         return list_dto ;

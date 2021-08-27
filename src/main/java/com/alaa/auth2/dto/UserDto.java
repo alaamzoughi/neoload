@@ -24,8 +24,7 @@ public class UserDto {
     @NotBlank(message = "email is required")
     @Email
     private String username;
-    @NotBlank(message = "photo is required")
-    private String photo;
+
     @Nullable
     private List<RoleDto> roles;
     private String password;

@@ -1,6 +1,7 @@
 package com.alaa.auth2.controller;
 
 
+import com.alaa.auth2.controller.api.UserApi;
 import com.alaa.auth2.dto.ResponseDto;
 import com.alaa.auth2.dto.RoleToUserForm;
 import com.alaa.auth2.dto.UserDto;
@@ -25,53 +26,48 @@ import java.util.List;
 import java.util.Map;
 
 @Slf4j
-@Api
 @RestController
-@RequestMapping("/api")
 @RequiredArgsConstructor
-public class UserController {
+public class UserController implements UserApi {
     @Autowired
     private UserService userService;
 
 
-    @GetMapping("/users")
+    @Override
+
     public ResponseEntity<List<UserDto>> getUsers() {
         return ResponseEntity.ok().body(userService.getUsers());
     }
+    @Override
 
-    @PostMapping("/user/save")
-    public ResponseEntity<UserDto> saveUser(@Valid @RequestBody UserDto userDto) {
+    public ResponseEntity<UserDto> saveUser( UserDto userDto) {
         URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/user/save").toUriString());
         return ResponseEntity.created(uri).body(userService.saveUser(userDto));
     }
 
-    @PostMapping("/role/addtouser")
-    public ResponseDto saveRole(@RequestBody RoleToUserForm form) {
+    @Override
+
+    public ResponseDto saveRole(RoleToUserForm form) {
         return (ResponseDto) userService.addRoleToUser(form.getUsername(), form.getRoleName());
 
     }
 
-    @PutMapping("/reset/pass/{id}")
-    public ResponseDto resetPassword(@PathVariable Integer id, @RequestBody String password) throws NotFoundException {
+    @Override
+
+    public ResponseDto resetPassword( Integer id,  String password) throws NotFoundException {
        return userService.resetPassword(id , password) ;
 
     }
 
-    @DeleteMapping("/user/delete/{id}")
-    public ResponseDto deleteUser(@PathVariable Integer id) throws NotFoundException {
+    @Override
+
+    public ResponseDto deleteUser( Integer id) throws NotFoundException {
         return userService.delete(id) ;
 
 
     }
 
-    @GetMapping("/us")
-    public UserDto getUser() throws NotFoundException {
 
-            String username = "swilah" ;
-            return userService.findByUsername(username) ;
-
-
-    }
 
 
 

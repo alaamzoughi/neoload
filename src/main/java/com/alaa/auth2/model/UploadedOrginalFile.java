@@ -20,7 +20,7 @@ import java.util.Date;
 @Table(name = "uploaded_orginal_file")
 public class UploadedOrginalFile implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id ;
     @Column
     private String fileName ;

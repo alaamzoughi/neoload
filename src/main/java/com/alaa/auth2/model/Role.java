@@ -14,7 +14,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Table
 public class Role implements Serializable {
-    @Id  @GeneratedValue(strategy = GenerationType.AUTO)
+    @Id  @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id ;
     @Column
     private String name ;

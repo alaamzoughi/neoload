@@ -1,8 +1,11 @@
 package com.alaa.auth2;
 
+import com.alaa.auth2.dto.RoleDto;
 import com.alaa.auth2.dto.UserDto;
 import com.alaa.auth2.fileManagement.FileStorageProperties;
+import com.alaa.auth2.model.Role;
 import com.alaa.auth2.model.User;
+import com.alaa.auth2.service.RoleService;
 import com.alaa.auth2.service.UserService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -31,9 +34,14 @@ public class   Auth2Application {
 
 
     @Bean
-    CommandLineRunner run (UserService userService) {
+    CommandLineRunner run (UserService userService , RoleService roleService) {
         return args -> {
-           userService.saveUser(new UserDto(null ,"ahmed" , "hamidou" , "photo" , null , "123")) ;
+           userService.saveUser(new UserDto(null ,"initial_user" , "initial_user@test.com"  , null , "123")) ;
+           roleService.saveRole(new RoleDto(null,"ADMIN" ,null) ) ;
+           roleService.saveRole(new RoleDto(null,"UTILISATEUR" ,null) ) ;
+           userService.addRoleToUser("initial_user@test.com" ,"ADMIN") ;
+           userService.addRoleToUser("initial_user@test.com" ,"UTILISATEUR") ;
+
         } ;
     }
 

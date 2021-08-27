@@ -28,9 +28,6 @@ public class OperationDto {
     private String nomProjet ;
 
 
-    private String logoClient ;
-
-
     private Date dateTest ;
 
 

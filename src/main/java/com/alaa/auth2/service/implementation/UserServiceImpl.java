@@ -50,8 +50,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             String username = userDto.getUsername() ;
             Optional<User> storedUser = Optional.ofNullable(userRepo.findByUsername(username));
             if (storedUser.isPresent()) {
-                throw new ExistingEntityException("Username is already used ") ;
-
+                return null ;
             }
             else {
                 ModelMapper modelMapper = new ModelMapper();
@@ -69,16 +68,20 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     public ResponseDto addRoleToUser(String username, String roleName) {
 
 
+
         User user = userRepo.findByUsername(username) ;
         Role role = roleRepo.findByName(roleName) ;
-        user.getRoles().add(role) ;
-        return ResponseDto.builder()
-                .message("sucess")
-                .build() ;
-
+        if(user.getRoles().contains(role)) {
+            return null ;
+        }
+        else {
+            user.getRoles().add(role) ;
+            return ResponseDto.builder()
+                    .message("sucess")
+                    .build() ;
+        }
 
     }
-
     @Override
     public User getUser(String username) {
         return userRepo.findByUsername(username);

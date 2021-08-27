@@ -21,7 +21,7 @@ import java.io.Serializable;
 public class TransformedFile implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id ;
     @Column
     private String fileName ;

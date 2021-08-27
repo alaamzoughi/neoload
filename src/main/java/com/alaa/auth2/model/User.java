@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @Table(name="\"user\"")
 public class User implements Serializable {
-    @Id @GeneratedValue(strategy = GenerationType.AUTO)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id ;
     @Column
     private String name ;
@@ -24,8 +24,6 @@ public class User implements Serializable {
     private String username ;
     @Column
     private String password ;
-    @Column
-    private String photo ;
     @Nullable
     @ManyToMany(fetch=FetchType.EAGER)
     private Collection<Role> roles = new ArrayList<>() ;

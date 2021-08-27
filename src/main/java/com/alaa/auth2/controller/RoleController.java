@@ -16,17 +16,18 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import javax.validation.Valid;
 import java.net.URI;
 
-@Api
+
 @RestController
-@RequestMapping("/api")
+
 @RequiredArgsConstructor
 public class RoleController implements RoleApi {
 
     @Autowired
     private RoleService roleService ;
 
-    @PostMapping("/role/save")
-    public ResponseEntity<RoleDto> saveRole(@Valid @RequestBody RoleDto roleDto) {
+
+    @Override
+    public ResponseEntity<RoleDto> saveRole( RoleDto roleDto) {
         URI uri = URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/api/role/save").toUriString());
         return ResponseEntity.created(uri).body(roleService.saveRole(roleDto));
     }

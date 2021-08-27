@@ -4,35 +4,29 @@ import com.alaa.auth2.controller.api.OperationApi;
 import com.alaa.auth2.dto.OperationDto;
 import com.alaa.auth2.model.Operation;
 import com.alaa.auth2.service.OperationService;
-import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 
 @Slf4j
 
-@Api
-@RequestMapping("/api")
+
 @RequiredArgsConstructor
 @RestController
 public class OperationController implements OperationApi {
     @Autowired
     private OperationService operationService ;
 
-    @GetMapping("/historique")
+    @Override
     public ResponseEntity<List<OperationDto>> getOperations() {
 
         ArrayList<Operation> operations = (ArrayList<Operation>) operationService.getOperations();
@@ -47,43 +41,47 @@ public class OperationController implements OperationApi {
     }
 
 
-    @GetMapping("/historique/perso")
-    public List<OperationDto> getHistoriquePersonnel() {
-        return operationService.getOperationsPersonnel() ;
+    @Override
+    public ResponseEntity<List<OperationDto>> getHistoriquePersonnel() {
+
+        return ResponseEntity.ok().body(operationService.getOperationsPersonnel());
 
     }
 
 
-    @GetMapping("/historique/{username}")
-    public List<OperationDto> getHistoriqueByUtilisateur(@PathVariable String username) {
+    @Override
+    public ResponseEntity<List<OperationDto>> getHistoriqueByUtilisateur(String username) {
 
-        return operationService.getOperationsByUser(username) ;
-    }
-
-    @GetMapping("/historique/perso/{client}")
-    public List<OperationDto> getHistoriquePersonnelByClient(@PathVariable  String client) {
-        return operationService.getHistoriquePersonnelByClient(client) ;
+        return ResponseEntity.ok().body(operationService.getOperationsByUser(username));
 
     }
 
-    @GetMapping("/historique/client/{client}")
-    public List<OperationDto> getHistoriqueByClient(@PathVariable  String client) {
-        return operationService.getHistoriqueByClient(client) ;
-    }
+    @Override
+    public ResponseEntity<List<OperationDto>> getHistoriquePersonnelByClient(String client) {
 
-    @GetMapping("/historique/perso/date/{date}")
-    public List<OperationDto> getHistoriquePersonnelByDate(@PathVariable("date") @DateTimeFormat(pattern = "yyyy-MM-dd") Date date) {
-        return operationService.getHistoriquePersonnelByDate(date) ;
+        return ResponseEntity.ok().body(operationService.getHistoriquePersonnelByClient(client));
+
 
     }
+    @Override
 
-    @GetMapping("/historique/date/{date}")
-    public List<OperationDto> getHistoriqueByDate(@PathVariable("date") @DateTimeFormat(pattern = "yyyy-MM-dd") Date date) {
-        return operationService.getHistoriqueByDate(date) ;
+    public ResponseEntity<List<OperationDto>> getHistoriqueByClient(String client) {
+
+        return ResponseEntity.ok().body(operationService.getHistoriqueByClient(client));
     }
+    @Override
 
+    public ResponseEntity<List<OperationDto>> getHistoriquePersonnelByDate(Date date) {
 
+        return ResponseEntity.ok().body(operationService.getHistoriquePersonnelByDate(date));
 
+    }
+    @Override
+
+    public ResponseEntity<List<OperationDto>> getHistoriqueByDate(Date date) {
+
+        return ResponseEntity.ok().body(operationService.getHistoriqueByDate(date));
+    }
 
 
     }

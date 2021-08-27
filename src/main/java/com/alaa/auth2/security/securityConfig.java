@@ -45,20 +45,41 @@ public class securityConfig extends WebSecurityConfigurerAdapter {
             "/v2/api-docs",
             "/swagger-resources",
             "/swagger-resources/configuration/ui",
-            "/swagger-resources/configuration/security"
+            "/swagger-resources/configuration/security",
+
+    };
+
+    private static final String[] ADMIN_APIS_LIST = {
+            "/api/historique" ,
+            "/api/historique/{username}",
+            "/api/historique/client/{client}",
+            "/api/historique/date/{date}" ,
+            "/api/role/save" ,
+            "/api/users" ,
+            "/api/user/save",
+            "/api/role/addtouser",
+            "/api/reset/pass/{id}" ,
+            "/api/user/delete/{id}",
+
+    };
+    private static final String[] UTILISATEUR_APIS_LIST = {
+            "/api/generate/doc" ,
+            "/api/historique/perso/{client}" ,
+            "/api/historique/perso" ,
+            "/api/historique/perso/date/{date}" ,
+            "/uploadFile",
+            "/downloadFile/{fileName:.+}"
     };
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
-
         http.csrf().disable() ;
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) ;
         http.authorizeRequests().antMatchers(GET, "/login" ).permitAll();
         http.authorizeRequests().antMatchers(AUTH_LIST).permitAll();
-        /**
-        http.authorizeRequests().antMatchers(GET, "/api/user/**").hasAnyAuthority("Role_User");
-         **/
+        http.authorizeRequests().antMatchers(GET, ADMIN_APIS_LIST).hasAnyAuthority("ADMIN");
+        http.authorizeRequests().antMatchers(GET, UTILISATEUR_APIS_LIST).hasAnyAuthority("UTILISATEUR");
         http.authorizeRequests().anyRequest().authenticated() ;
         http.addFilter(new CustomAuthenticationFilter(authenticationManagerBean()) ) ;
         http.addFilterBefore(new CustomAuthorizationFilter() , UsernamePasswordAuthenticationFilter.class) ;

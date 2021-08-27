@@ -22,14 +22,13 @@ import java.util.Date;
 public class Operation implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id ;
     @Column
     private String nomDocument ;
     @Column
     private String nomClient ;
-    @Column
-    private String logoClient ;
+
     @Column
     @Temporal(TemporalType.DATE)
     private Date dateTest ;
